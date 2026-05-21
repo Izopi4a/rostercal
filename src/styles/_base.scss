@@ -1,0 +1,12 @@
+.rostercal {
+  font-family: var(--rc-font);
+  color: var(--rc-fg);
+  background: var(--rc-bg);
+  box-sizing: border-box;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+}

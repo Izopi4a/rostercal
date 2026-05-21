@@ -1,0 +1,25 @@
+// CSS custom property tokens for rostercal.
+// Override these in a custom stylesheet to retheme without rebuilding.
+
+.rostercal {
+  --rc-bg: #fff;
+  --rc-fg: #1a1a1a;
+  --rc-border: #e0e0e0;
+  --rc-muted-fg: #888;
+  --rc-accent: #2b7fff;
+  --rc-today-bg: #fff8d6;
+
+  --rc-event-bg: var(--rc-accent);
+  --rc-event-fg: #fff;
+  --rc-event-radius: 4px;
+
+  --rc-radius: 4px;
+  --rc-cell-min-height: 8rem;
+  --rc-event-row-height: 1.4rem;
+  --rc-event-row-gap: 2px;
+  --rc-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --rc-z-event: 1;
+  --rc-z-popover: 10;
+  --rc-z-drag: 100;
+}

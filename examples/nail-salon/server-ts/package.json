@@ -1,0 +1,20 @@
+{
+  "name": "rostercal-nail-salon-server-ts",
+  "version": "0.0.0",
+  "description": "Nail salon demo backend — TypeScript + Hono + PostgreSQL",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file .env src/server.ts",
+    "start": "tsx --env-file .env src/server.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.7.10",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.14",
+    "tsx": "^4.19.2",
+    "typescript": "^6.0.3"
+  }
+}

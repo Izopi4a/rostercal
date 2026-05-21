@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rostercal — examples</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color-scheme: light dark;
+      }
+      body {
+        max-width: 720px;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+        line-height: 1.55;
+      }
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+      .sub {
+        color: #777;
+        margin-top: 0;
+        margin-bottom: 2rem;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      li a {
+        font-weight: 600;
+        text-decoration: none;
+      }
+      li p {
+        margin: 0.25rem 0 0 0;
+        color: #777;
+        font-size: 0.9rem;
+      }
+      .milestone {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #999;
+        margin-left: 0.5rem;
+      }
+      @media (prefers-color-scheme: dark) {
+        li {
+          border-bottom-color: #333;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>rostercal — examples</h1>
+    <p class="sub">A small calendar library. Month view + Resource Time Grid. MIT.</p>
+
+    <ul>
+      <li>
+        <a href="./month-basic/">month-basic <span class="milestone">M2</span></a>
+        <p>Month grid with a handful of fixture events.</p>
+      </li>
+      <li>
+        <a href="./month-themes/">month-themes <span class="milestone">M2</span></a>
+        <p>Same month view, swap between light, dark, and high-contrast themes at runtime.</p>
+      </li>
+      <li>
+        <a href="./imperative-api/">imperative-api <span class="milestone">M3</span></a>
+        <p>Add/remove events and navigate via the public API. Shows listener payloads in a log.</p>
+      </li>
+      <li>
+        <a href="./dnd/">dnd <span class="milestone">M4</span></a>
+        <p>Drag events between days; drag the right edge to resize; or use the keyboard. Toggle a rejection handler to see optimistic rollback.</p>
+      </li>
+      <li>
+        <a href="./rtg-worker-scheduling/">rtg-worker-scheduling <span class="milestone">M5</span></a>
+        <p>Resource Time Grid view: workers as columns, 30-min slots, drag appointments between workers and times.</p>
+      </li>
+      <li>
+        <a href="./rtg-many-resources/">rtg-many-resources <span class="milestone">M5</span></a>
+        <p>Eight columns with overlapping events to show column splitting (50/50, thirds, etc.).</p>
+      </li>
+      <li>
+        <a href="./crud-url-shorthand/">crud-url-shorthand <span class="milestone">M6</span></a>
+        <p>Wire each operation to "METHOD /path/:id". A localStorage-backed fake fetcher serves the requests; toggle a "simulate 500" switch to see optimistic rollback + dataError.</p>
+      </li>
+      <li>
+        <a href="./crud-function-form/">crud-function-form <span class="milestone">M6</span></a>
+        <p>Each operation is a plain function. <code>fromServer</code>/<code>toServer</code> translate a backend DTO shape (uuid/name/at/untilAt) to/from RosterEvent.</p>
+      </li>
+      <li>
+        <a href="./nail-salon/">nail-salon <span class="milestone">M7</span></a>
+        <p>Fullstack salon booking app. Add workers and services, then drag a service card onto the Resource Time Grid to create appointments. Backed by a real PostgreSQL database via a TypeScript (Hono) server — Go and PHP backends coming soon.</p>
+      </li>
+    </ul>
+  </body>
+</html>

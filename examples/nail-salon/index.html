@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nail Salon — rostercal</title>
+    <link rel="stylesheet" href="../_shared/demo-frame.css" />
+    <style>
+      body {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-header {
+        padding: 0.6rem 1.2rem;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0;
+      }
+      .page-header h1 { margin: 0; font-size: 1.1rem; }
+      .page-header a.back { font-size: 0.8rem; color: #555; text-decoration: none; }
+      .page-header a.back:hover { text-decoration: underline; }
+
+      .layout {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+      }
+
+      /* ---- Sidebar ---- */
+      .sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        border-right: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        background: #fafafa;
+      }
+
+      .sidebar-section {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      .sidebar-section h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #888;
+      }
+
+      .worker-item, .service-card {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+      .worker-item {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+      }
+      .worker-item .worker-name { flex: 1; font-weight: 500; }
+      .worker-item .skills-badge {
+        font-size: 0.7rem;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+
+      .service-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        cursor: grab;
+        user-select: none;
+      }
+      .service-card:hover { background: #f0f7ff; border-color: #90caf9; }
+      .service-card[draggable="true"]:active { cursor: grabbing; }
+      .service-card .svc-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .service-card .svc-name { flex: 1; font-weight: 500; }
+      .service-card .svc-meta { font-size: 0.72rem; color: #888; }
+
+      .add-btn {
+        font: inherit;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.7rem;
+        border: 1px dashed #ccc;
+        background: transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        color: #555;
+        margin-top: 0.4rem;
+      }
+      .add-btn:hover { border-color: #2b7fff; color: #2b7fff; }
+
+      .delete-btn {
+        font: inherit;
+        font-size: 0.75rem;
+        padding: 1px 6px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: #bbb;
+        border-radius: 3px;
+      }
+      .delete-btn:hover { color: #e53e3e; background: #fff0f0; }
+
+      /* ---- Main panel ---- */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 0.75rem 1rem;
+      }
+
+      #cal { flex: 1; overflow: hidden; }
+
+      /* ---- Dialogs ---- */
+      dialog {
+        border: none;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        min-width: 320px;
+      }
+      dialog::backdrop { background: rgba(0,0,0,0.3); }
+      .dialog-header {
+        padding: 1rem 1.25rem 0.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dialog-header h3 { margin: 0; font-size: 1rem; }
+      .dialog-close {
+        font: inherit;
+        font-size: 1.2rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #888;
+        line-height: 1;
+        padding: 0 4px;
+      }
+      .dialog-body { padding: 1rem 1.25rem; }
+      .dialog-footer {
+        padding: 0.75rem 1.25rem;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+      }
+
+      .form-row { margin-bottom: 0.75rem; }
+      .form-row label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 0.25rem;
+      }
+      .form-row input,
+      .form-row select,
+      .form-row textarea {
+        font: inherit;
+        font-size: 0.875rem;
+        width: 100%;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      .form-row textarea { resize: vertical; min-height: 60px; }
+      .form-row .row2 { display: flex; gap: 0.5rem; }
+      .form-row .row2 > * { flex: 1; }
+      .form-row .hint { font-size: 0.72rem; color: #888; margin-top: 0.2rem; }
+
+      .btn-primary {
+        font: inherit;
+        padding: 0.45rem 1rem;
+        background: #2b7fff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+      .btn-primary:hover { background: #1a6fe0; }
+      .btn-danger {
+        font: inherit;
+        padding: 0.45rem 1rem;
+        background: transparent;
+        color: #e53e3e;
+        border: 1px solid #e53e3e;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+      .btn-danger:hover { background: #fff0f0; }
+      .btn-secondary {
+        font: inherit;
+        padding: 0.45rem 1rem;
+        background: transparent;
+        color: #555;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.875rem;
+      }
+
+      .appt-meta {
+        font-size: 0.8rem;
+        color: #666;
+        background: #f7f7f7;
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .sidebar { background: #1e1e1e; border-color: #333; }
+        .sidebar-section { border-color: #333; }
+        .worker-item, .service-card { background: #2a2a2a; border-color: #444; color: #eee; }
+        .service-card:hover { background: #1a3050; border-color: #4a8fff; }
+        .page-header { border-color: #333; }
+        dialog { background: #1e1e1e; color: #eee; }
+        .dialog-header, .dialog-footer { border-color: #333; }
+        .form-row input, .form-row select, .form-row textarea {
+          background: #2a2a2a; border-color: #444; color: #eee;
+        }
+        .appt-meta { background: #2a2a2a; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-header">
+      <a class="back" href="../">← all demos</a>
+      <h1>Nail Salon</h1>
+      <span style="font-size:0.8rem;color:#888">Drag a service onto the calendar to book an appointment</span>
+    </div>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <h2>Workers</h2>
+          <div id="worker-list"></div>
+          <button type="button" class="add-btn" id="btn-add-worker">+ Add worker</button>
+        </div>
+        <div class="sidebar-section">
+          <h2>Services — Haircuts</h2>
+          <div id="service-list-haircuts"></div>
+        </div>
+        <div class="sidebar-section">
+          <h2>Services — Nails</h2>
+          <div id="service-list-nails"></div>
+        </div>
+        <div class="sidebar-section">
+          <button type="button" class="add-btn" id="btn-add-service">+ Add service</button>
+        </div>
+      </aside>
+
+      <!-- Calendar panel -->
+      <div class="main">
+        <div class="toolbar">
+          <button type="button" id="btn-prev">&#8592; Prev</button>
+          <button type="button" id="btn-today">Today</button>
+          <button type="button" id="btn-next">Next &#8594;</button>
+          <strong id="date-label" style="align-self:center;margin-left:0.25rem"></strong>
+        </div>
+        <div id="cal"></div>
+      </div>
+    </div>
+
+    <!-- Add worker dialog -->
+    <dialog id="dlg-add-worker">
+      <div class="dialog-header">
+        <h3>Add worker</h3>
+        <button type="button" class="dialog-close" data-close="dlg-add-worker">&#x2715;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-row">
+          <label for="worker-name">Name</label>
+          <input type="text" id="worker-name" placeholder="e.g. Jordan" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <label for="worker-skills">Skills</label>
+          <select id="worker-skills">
+            <option value="both">Haircuts &amp; Nails</option>
+            <option value="haircuts">Haircuts only</option>
+            <option value="nails">Nails only</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn-secondary" data-close="dlg-add-worker">Cancel</button>
+        <button type="button" class="btn-primary" id="btn-save-worker">Add</button>
+      </div>
+    </dialog>
+
+    <!-- Add service dialog -->
+    <dialog id="dlg-add-service">
+      <div class="dialog-header">
+        <h3>Add service</h3>
+        <button type="button" class="dialog-close" data-close="dlg-add-service">&#x2715;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-row">
+          <label for="svc-name">Name</label>
+          <input type="text" id="svc-name" placeholder="e.g. French manicure" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <label for="svc-category">Category</label>
+          <select id="svc-category">
+            <option value="haircuts">Haircuts</option>
+            <option value="nails">Nails</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="row2">
+            <div>
+              <label for="svc-duration">Duration (min)</label>
+              <input type="number" id="svc-duration" value="30" min="5" step="5" />
+            </div>
+            <div>
+              <label for="svc-price">Price ($)</label>
+              <input type="number" id="svc-price" value="25" min="0" step="5" />
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="svc-color">Color</label>
+          <input type="color" id="svc-color" value="#2b7fff" style="height:2.2rem;padding:2px 4px" />
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn-secondary" data-close="dlg-add-service">Cancel</button>
+        <button type="button" class="btn-primary" id="btn-save-service">Add</button>
+      </div>
+    </dialog>
+
+    <!-- Service picker (triggered by slot "+" button) -->
+    <dialog id="dlg-pick-service">
+      <div class="dialog-header">
+        <h3>Pick a service</h3>
+        <button type="button" class="dialog-close" data-close="dlg-pick-service">&#x2715;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-row">
+          <label for="pick-service-select">Service</label>
+          <select id="pick-service-select"></select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn-secondary" data-close="dlg-pick-service">Cancel</button>
+        <button type="button" class="btn-primary" id="btn-confirm-service">Book</button>
+      </div>
+    </dialog>
+
+    <!-- Appointment detail dialog -->
+    <dialog id="dlg-appointment">
+      <div class="dialog-header">
+        <h3 id="dlg-appt-title">Appointment</h3>
+        <button type="button" class="dialog-close" data-close="dlg-appointment">&#x2715;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="appt-meta" id="dlg-appt-meta"></div>
+        <div class="form-row">
+          <label for="appt-client">Client name</label>
+          <input type="text" id="appt-client" placeholder="Walk-in" autocomplete="off" />
+        </div>
+        <div class="form-row">
+          <label for="appt-notes">Notes</label>
+          <textarea id="appt-notes" placeholder="Allergies, preferences…"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn-danger" id="btn-delete-appt">Delete</button>
+        <button type="button" class="btn-secondary" data-close="dlg-appointment">Cancel</button>
+        <button type="button" class="btn-primary" id="btn-save-appt">Save</button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,240 @@
+.rc-rtg {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--rc-border);
+  border-radius: var(--rc-radius);
+  overflow: hidden;
+  --rc-rtg-axis-width: 4rem;
+}
+
+.rc-rtg__title {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-rtg__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rc-rtg-axis-width) 1fr;
+  grid-template-rows: auto 1fr;
+  height: clamp(24rem, 70vh, 56rem);
+  overflow-y: auto;
+}
+
+.rc-rtg__corner {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--rc-bg);
+  border-right: 1px solid var(--rc-border);
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-rtg__header {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--rc-rtg-resources, 1), 1fr);
+  background: var(--rc-bg);
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-rtg__resource {
+  padding: 0.5rem 0.6rem;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: center;
+  border-right: 1px solid var(--rc-border);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.rc-rtg__axis {
+  grid-column: 1;
+  grid-row: 2;
+  position: relative;
+  border-right: 1px solid var(--rc-border);
+  background: var(--rc-bg);
+  height: var(--rc-rtg-day-height);
+}
+
+.rc-rtg__hour {
+  height: var(--rc-rtg-hour-height);
+  font-size: 0.7rem;
+  color: var(--rc-muted-fg);
+  padding: 0.15rem 0.4rem;
+  text-align: right;
+  border-bottom: 1px solid var(--rc-border);
+  box-sizing: border-box;
+}
+
+.rc-rtg__grid {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--rc-rtg-resources, 1), 1fr);
+  height: var(--rc-rtg-day-height);
+}
+
+.rc-rtg__column {
+  position: relative;
+  border-right: 1px solid var(--rc-border);
+  background: var(--rc-bg);
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &--drop-target {
+    background: color-mix(in srgb, var(--rc-accent) 10%, var(--rc-bg));
+  }
+}
+
+.rc-rtg__slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--rc-rtg-slot-height);
+  border-bottom: 1px solid var(--rc-border);
+  pointer-events: none;
+
+  &--sub-hour {
+    border-bottom-style: dashed;
+    border-bottom-color: color-mix(in srgb, var(--rc-border) 55%, transparent);
+  }
+}
+
+.rc-rtg__event {
+  position: absolute;
+  background: var(--rc-event-bg);
+  color: var(--rc-event-fg);
+  border-radius: var(--rc-event-radius);
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  overflow: hidden;
+  cursor: default;
+  box-shadow: 0 0 0 1px var(--rc-bg);
+  touch-action: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--rc-fg);
+    outline-offset: 1px;
+  }
+
+  &--dragging-move,
+  &--dragging-resize {
+    opacity: 0.7;
+    cursor: grabbing;
+    z-index: var(--rc-z-drag);
+  }
+}
+
+.rc-rtg__event-time {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  line-height: 1.1;
+}
+
+.rc-rtg__event-title {
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/**
+ * Utility class for add-buttons injected via slotDidMount.
+ * Place it on a <button> inside the slot element; it will appear on hover.
+ *
+ * The slot itself has pointer-events:none by default, so :hover on the slot
+ * never fires. We use :has() to enable pointer-events on any slot that
+ * contains this button, making the full slot area the hover target.
+ */
+.rc-rtg__slot:has(.rc-rtg__slot-add) {
+  pointer-events: auto;
+}
+
+.rc-rtg__slot-add {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--rc-accent);
+  color: #fff;
+  font-size: 16px;
+  line-height: 22px;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+  pointer-events: auto;
+
+  .rc-rtg__slot:hover & {
+    opacity: 1;
+  }
+}
+
+.rc-rtg__drop-preview {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  background: color-mix(in srgb, var(--rc-accent) 20%, transparent);
+  border: 2px dashed var(--rc-accent);
+  border-radius: var(--rc-event-radius);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.rc-rtg__now-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e53e3e;
+  z-index: 1;
+  pointer-events: none;
+  display: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: inherit;
+  }
+}
+
+.rc-rtg__event-resize {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  cursor: ns-resize;
+  background: transparent;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "name": "@izopi4a/rostercal",
+  "version": "0.0.0",
+  "description": "A small calendar library: Month view + Resource Time Grid. MIT, zero runtime deps.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles": "./dist/styles/index.css",
+    "./themes/*.css": "./dist/styles/themes/*.css",
+    "./scss/*": "./src/styles/*"
+  },
+  "files": [
+    "dist",
+    "src/styles",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:ts && npm run build:css",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "build:css": "sass src/styles/index.scss:dist/styles/index.css src/styles/themes:dist/styles/themes --no-source-map --style=compressed",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "dev:examples": "vite --config examples/vite.config.ts",
+    "build:examples": "npm run build && vite build --config examples/vite.config.ts",
+    "preview:examples": "vite preview --config examples/vite.config.ts"
+  },
+  "keywords": [
+    "calendar",
+    "scheduler",
+    "roster",
+    "resource",
+    "time-grid",
+    "month-view",
+    "typescript"
+  ],
+  "author": "izopi4a",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izopi4a/rostercal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/izopi4a/rostercal/issues"
+  },
+  "homepage": "https://github.com/izopi4a/rostercal#readme",
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.7.0",
+    "@vitest/coverage-v8": "^4.1.6",
+    "jsdom": "^29.1.1",
+    "sass": "^1.99.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
+  }
+}

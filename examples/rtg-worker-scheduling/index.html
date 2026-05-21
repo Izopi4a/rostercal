@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rtg-worker-scheduling — rostercal</title>
+    <link rel="stylesheet" href="../_shared/demo-frame.css" />
+  </head>
+  <body>
+    <header>
+      <a class="back" href="../">← all demos</a>
+      <h1>rtg-worker-scheduling</h1>
+      <p>
+        Three workers, a single day, 30-minute slots. Drag an appointment to a different time or
+        worker. Drag the bottom edge to extend it.
+      </p>
+    </header>
+    <div class="toolbar">
+      <button type="button" id="btn-prev">&#8592; Prev</button>
+      <button type="button" id="btn-today">Today</button>
+      <button type="button" id="btn-next">Next &#8594;</button>
+      <strong id="date-label" style="align-self:center;margin-left:0.25rem"></strong>
+      <span style="margin-left:auto;display:flex;gap:0.5rem;align-items:center">
+        <button type="button" id="btn-12h" aria-pressed="false">12h</button>
+        <button type="button" id="btn-24h" aria-pressed="true">24h</button>
+        <button type="button" id="btn-local" aria-pressed="true">Local</button>
+        <button type="button" id="btn-utc" aria-pressed="false">UTC</button>
+      </span>
+    </div>
+    <div id="cal"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

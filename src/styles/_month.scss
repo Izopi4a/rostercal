@@ -1,0 +1,173 @@
+.rc-month {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--rc-border);
+  border-radius: var(--rc-radius);
+  overflow: hidden;
+}
+
+.rc-month__title {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-month__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--rc-border);
+}
+
+.rc-month__weekday {
+  text-align: center;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  color: var(--rc-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rc-month__grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.rc-month__week {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  min-height: var(--rc-cell-min-height);
+  border-bottom: 1px solid var(--rc-border);
+  overflow: hidden;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rc-month__day {
+  border-right: 1px solid var(--rc-border);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &--other-month {
+    color: var(--rc-muted-fg);
+    background: color-mix(in srgb, var(--rc-bg) 92%, var(--rc-fg) 8%);
+  }
+
+  &--today {
+    background: var(--rc-today-bg);
+  }
+
+  &--drop-target {
+    outline: 2px dashed var(--rc-accent);
+    outline-offset: -2px;
+  }
+}
+
+.rc-month__day-number {
+  font-weight: 500;
+}
+
+.rc-month__events {
+  position: absolute;
+  inset: 1.75rem 0 0 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: var(--rc-event-row-height);
+  gap: var(--rc-event-row-gap) 0;
+  padding: 0 2px;
+  pointer-events: none;
+}
+
+.rc-month__event {
+  position: relative;
+  background: var(--rc-event-bg);
+  color: var(--rc-event-fg);
+  font-size: 0.75rem;
+  line-height: var(--rc-event-row-height);
+  padding: 0 0.4rem;
+  border-radius: var(--rc-event-radius);
+  margin: 0 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: default;
+  touch-action: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--rc-fg);
+    outline-offset: 1px;
+  }
+
+  &--continues-left {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin-left: 0;
+  }
+
+  &--continues-right {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-right: 0;
+  }
+
+  &--dragging-move,
+  &--dragging-resize {
+    opacity: 0.55;
+    cursor: grabbing;
+  }
+
+  &--carrying {
+    outline: 2px solid var(--rc-fg);
+    outline-offset: 1px;
+    animation: rc-carry-pulse 1.2s ease-in-out infinite;
+  }
+}
+
+.rc-month__event-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  // Invisible by default; subtle visual on hover.
+  background: transparent;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
+
+@keyframes rc-carry-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--rc-fg) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rc-fg) 0%, transparent);
+  }
+}
+
+.rc-month__event-time {
+  font-weight: 600;
+  margin-right: 0.2rem;
+}
+
+.rc-month__more {
+  font-size: 0.7rem;
+  color: var(--rc-muted-fg);
+  line-height: var(--rc-event-row-height);
+  padding: 0 0.4rem;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: default;
+}

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>month-themes — rostercal</title>
+    <link rel="stylesheet" href="../_shared/demo-frame.css" />
+  </head>
+  <body>
+    <header>
+      <a class="back" href="../">← all demos</a>
+      <h1>month-themes</h1>
+      <p>Same month view, three themes. Themes swap via the data-rostercal-theme attribute — no rebuild required.</p>
+    </header>
+    <div class="toolbar" role="group" aria-label="Theme">
+      <button type="button" data-theme="light" aria-pressed="true">light</button>
+      <button type="button" data-theme="dark" aria-pressed="false">dark</button>
+      <button type="button" data-theme="high-contrast" aria-pressed="false">high-contrast</button>
+    </div>
+    <div id="cal"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
