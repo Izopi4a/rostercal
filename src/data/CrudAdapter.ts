@@ -43,10 +43,6 @@ export function applyUrlTemplate(template: string, params: TemplateParams): stri
 export class CrudController {
   constructor(private readonly config: CrudAdapter) {}
 
-  get optimistic(): boolean {
-    return this.config.optimistic ?? true;
-  }
-
   hasList(): boolean {
     return this.config.list !== undefined;
   }

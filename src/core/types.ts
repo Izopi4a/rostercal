@@ -27,8 +27,6 @@ export interface CrudAdapter {
   fromServer?: (raw: unknown) => RosterEvent | RosterEvent[];
   toServer?: (event: RosterEvent) => unknown;
   fetcher?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
-  optimistic?: boolean;
-  debounceMs?: number;
 }
 
 export interface CalendarOptions {

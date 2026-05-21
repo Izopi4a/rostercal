@@ -10,7 +10,9 @@ const { Pool } = pg;
 // ---------------------------------------------------------------------------
 
 if (!process.env.DATABASE_URL) {
-  console.error("Error: DATABASE_URL is not set. Copy .env.example to .env and fill in your credentials.");
+  console.error(
+    "Error: DATABASE_URL is not set. Copy .env.example to .env and fill in your credentials.",
+  );
   process.exit(1);
 }
 
@@ -74,18 +76,18 @@ function toRosterEvent(row: Record<string, unknown>): unknown {
   const clientName = (row.client_name as string | null) ?? "";
   const serviceName = (row.service_name as string | null) ?? "Appointment";
   return {
-    id:         row.id,
-    title:      clientName ? `${serviceName} — ${clientName}` : serviceName,
-    start:      row.start_iso,
-    end:        row.end_iso,
+    id: row.id,
+    title: clientName ? `${serviceName} — ${clientName}` : serviceName,
+    start: row.start_iso,
+    end: row.end_iso,
     resourceId: row.worker_id,
-    color:      row.color ?? undefined,
+    color: row.color ?? undefined,
     extendedProps: {
-      serviceId:   row.service_id,
+      serviceId: row.service_id,
       serviceName,
-      priceCents:  row.price_cents ?? 0,
+      priceCents: row.price_cents ?? 0,
       clientName,
-      notes:       (row.notes as string | null) ?? "",
+      notes: (row.notes as string | null) ?? "",
     },
   };
 }
@@ -166,7 +168,7 @@ app.delete("/api/services/:id", async (c) => {
 
 app.get("/api/appointments", async (c) => {
   const from = c.req.query("from");
-  const to   = c.req.query("to");
+  const to = c.req.query("to");
   const { rows } = await pool.query(
     `${APPOINTMENT_SELECT} WHERE a.start_iso >= $1 AND a.start_iso <= $2 ORDER BY a.start_iso`,
     [from, to],
@@ -188,8 +190,15 @@ app.post("/api/appointments", async (c) => {
     `INSERT INTO appointments (id, worker_id, service_id, start_iso, end_iso, client_name, notes)
      VALUES (COALESCE($1::uuid, gen_random_uuid()), $2, $3, $4, $5, $6, $7)
      RETURNING id`,
-    [ev.id ?? null, ev.resourceId, ext.serviceId ?? null, ev.start, ev.end,
-     ext.clientName ?? null, ext.notes ?? null],
+    [
+      ev.id ?? null,
+      ev.resourceId,
+      ext.serviceId ?? null,
+      ev.start,
+      ev.end,
+      ext.clientName ?? null,
+      ext.notes ?? null,
+    ],
   );
   const id = rows[0]?.id as string;
   const { rows: full } = await pool.query(`${APPOINTMENT_SELECT} WHERE a.id = $1`, [id]);
@@ -216,12 +225,12 @@ app.patch("/api/appointments/:id", async (c) => {
     vals.push(val);
   };
 
-  if (ev.resourceId !== undefined)    push("worker_id",   ev.resourceId);
-  if (ev.start !== undefined)         push("start_iso",   ev.start);
-  if (ev.end !== undefined)           push("end_iso",     ev.end);
-  if (ext.serviceId !== undefined)    push("service_id",  ext.serviceId);
-  if (ext.clientName !== undefined)   push("client_name", ext.clientName);
-  if (ext.notes !== undefined)        push("notes",       ext.notes);
+  if (ev.resourceId !== undefined) push("worker_id", ev.resourceId);
+  if (ev.start !== undefined) push("start_iso", ev.start);
+  if (ev.end !== undefined) push("end_iso", ev.end);
+  if (ext.serviceId !== undefined) push("service_id", ext.serviceId);
+  if (ext.clientName !== undefined) push("client_name", ext.clientName);
+  if (ext.notes !== undefined) push("notes", ext.notes);
 
   if (sets.length > 0) {
     vals.push(id);

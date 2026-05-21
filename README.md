@@ -4,7 +4,7 @@ A small calendar library. Two views — **Month** and **Resource Time Grid** —
 
 Built for worker scheduling (duty rosters, shift rosters, crew rosters). TypeScript-first API and built-in drag & drop.
 
-**Status:** pre-release (v0). API is stable enough to build on; not yet published to npm.
+**Status:** pre-release (v0). API is stable enough to build on; published on npm as [`@izopi4a/rostercal`](https://www.npmjs.com/package/@izopi4a/rostercal).
 
 ---
 
@@ -79,6 +79,10 @@ new Calendar(element, options)
 | `data` | `CrudAdapter` | — | Backend sync adapter (see [CRUD adapter](#crud-adapter)) |
 | `dnd` | `boolean` | `true` | Enable drag & drop |
 | `slotMinutes` | `number` | `30` | Minutes per time slot (resource-time-grid only) |
+| `hour12` | `boolean` | follows `locale` | Force 12 or 24-hour clock for time labels |
+| `timezone` | `"local" \| "UTC"` | `"local"` | Clock used for positioning and labelling |
+| `eventDidMount` | `(info) => void` | — | Called after each event element is built and inserted. `info: { event, el }` |
+| `slotDidMount` | `(info) => void` | — | Resource-time-grid only. Called for each empty slot cell. `info: { date, resourceId, el }` |
 
 ---
 
@@ -145,12 +149,15 @@ cal.destroy(): void
 ## Event listeners
 
 ```ts
-cal.on("eventClick",  ({ event, native }) => { … });
-cal.on("eventDrop",   ({ event, oldStart, oldEnd }) => { … });
-cal.on("eventResize", ({ event, oldStart, oldEnd }) => { … });
-cal.on("dateClick",   ({ date, resourceId? }) => { … });
-cal.on("viewChange",  ({ view, date }) => { … });
-cal.on("dataError",   ({ op, error }) => { … });
+cal.on("eventClick",   ({ event, native }) => { … });
+cal.on("eventDrop",    ({ event, oldStart, oldEnd }) => { … });
+cal.on("eventResize",  ({ event, oldStart, oldEnd }) => { … });
+cal.on("dateClick",    ({ date, resourceId? }) => { … });
+cal.on("viewChange",   ({ view, date }) => { … });
+cal.on("dataError",    ({ op, error }) => { … });
+cal.on("externalDrop", ({ date, resourceId }) => { … });   // external draggable dropped on RTG
+
+cal.off("eventClick", handler);   // or use the unsubscribe returned by on()
 ```
 
 `on()` returns an unsubscribe function. Handlers may return a `Promise`; the calendar awaits it where the result matters (e.g. rejecting an `eventDrop` handler rolls back the move).
@@ -211,13 +218,10 @@ interface CrudAdapter {
   fromServer?: (raw: unknown) => RosterEvent | RosterEvent[];  // transform server → RosterEvent
   toServer?:   (event: RosterEvent) => unknown;                 // transform RosterEvent → server
   fetcher?:    (input: RequestInfo, init?: RequestInit) => Promise<Response>; // custom fetch (auth, base URL)
-
-  optimistic?: boolean;   // default true — apply locally, roll back on error
-  debounceMs?: number;    // batch rapid updates (e.g. from drag)
 }
 ```
 
-Operations are **optimistic by default** — changes appear instantly and roll back if the server rejects them. The `dataError` event fires on any failure.
+Operations are **optimistic** — changes appear instantly and roll back if the server rejects them. The `dataError` event fires on any failure.
 
 ---
 

@@ -123,7 +123,13 @@ export class ResourceTimeGridView implements View {
     body.appendChild(axis);
 
     const grid = el("div", "rc-rtg__grid");
-    const segments = layoutResourceTimeGrid({ events, resources, day: date, slotMinutes, timezone });
+    const segments = layoutResourceTimeGrid({
+      events,
+      resources,
+      day: date,
+      slotMinutes,
+      timezone,
+    });
     const slotsPerDay = Math.round(MINUTES_PER_DAY / slotMinutes);
 
     for (const r of resources) {

@@ -105,7 +105,12 @@ function fmtPrice(cents: number): string {
 }
 
 function fmtDate(d: Date): string {
-  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function fmtTime(d: Date): string {
@@ -169,7 +174,9 @@ function renderServices(): void {
       draggingService = svc;
       e.dataTransfer?.setData("text/plain", svc.id);
     });
-    card.addEventListener("dragend", () => { draggingService = null; });
+    card.addEventListener("dragend", () => {
+      draggingService = null;
+    });
 
     (svc.category === "haircuts" ? haircuts : nails).appendChild(card);
   }
@@ -178,7 +185,7 @@ function renderServices(): void {
   document.querySelectorAll<HTMLElement>("button[data-service-id]").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      const id = btn  .dataset.serviceId;
+      const id = btn.dataset.serviceId;
       if (!id) return;
       await apiFetch(`/api/services/${id}`, { method: "DELETE" });
       services = services.filter((s) => s.id !== id);
@@ -206,7 +213,7 @@ function rebuildCalendar(): void {
     resources: workers.map((w) => ({ id: w.id, title: w.name })),
     hour12: false,
     data: {
-      list:   `GET ${API}/api/appointments?from=:from&to=:to`,
+      list: `GET ${API}/api/appointments?from=:from&to=:to`,
       create: `POST ${API}/api/appointments`,
       update: `PATCH ${API}/api/appointments/:id`,
       delete: `DELETE ${API}/api/appointments/:id`,
@@ -218,8 +225,7 @@ function rebuildCalendar(): void {
       if (!cents) return;
       const badge = document.createElement("span");
       badge.textContent = fmtPrice(cents);
-      badge.style.cssText =
-        "position:absolute;bottom:3px;right:5px;font-size:0.6rem;opacity:0.85;";
+      badge.style.cssText = "position:absolute;bottom:3px;right:5px;font-size:0.6rem;opacity:0.85;";
       el.appendChild(badge);
     },
 
@@ -252,11 +258,11 @@ function rebuildCalendar(): void {
       resourceId,
       ...(svc.color ? { color: svc.color } : {}),
       extendedProps: {
-        serviceId:   svc.id,
+        serviceId: svc.id,
         serviceName: svc.name,
-        priceCents:  svc.price_cents,
-        clientName:  "",
-        notes:       "",
+        priceCents: svc.price_cents,
+        clientName: "",
+        notes: "",
       },
     };
     cal.addEvent(event);
@@ -318,7 +324,8 @@ getEl("btn-save-appt").addEventListener("click", () => {
     extendedProps: { ...(event.extendedProps ?? {}), clientName, notes },
   };
   // Recompute title to include client name
-  const serviceName = (event.extendedProps as { serviceName?: string } | undefined)?.serviceName ?? event.title;
+  const serviceName =
+    (event.extendedProps as { serviceName?: string } | undefined)?.serviceName ?? event.title;
   updated.title = clientName ? `${serviceName} — ${clientName}` : serviceName;
 
   cal.updateEvent(openEventId, updated);
@@ -369,11 +376,11 @@ getEl("btn-confirm-service").addEventListener("click", () => {
     resourceId,
     ...(svc.color ? { color: svc.color } : {}),
     extendedProps: {
-      serviceId:   svc.id,
+      serviceId: svc.id,
       serviceName: svc.name,
-      priceCents:  svc.price_cents,
-      clientName:  "",
-      notes:       "",
+      priceCents: svc.price_cents,
+      clientName: "",
+      notes: "",
     },
   };
   cal.addEvent(event);
@@ -426,10 +433,10 @@ getEl("btn-save-service").addEventListener("click", async () => {
     method: "POST",
     body: JSON.stringify({
       name,
-      category:    select("svc-category").value,
+      category: select("svc-category").value,
       durationMin: Number(input("svc-duration").value),
-      priceCents:  Math.round(Number(input("svc-price").value) * 100),
-      color:       input("svc-color").value,
+      priceCents: Math.round(Number(input("svc-price").value) * 100),
+      color: input("svc-color").value,
     }),
   });
   services.push(svc);
