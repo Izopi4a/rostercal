@@ -19,25 +19,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
       - name: Install
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Biome check
-        run: npm run check
+        run: pnpm run check
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       - name: Unit tests
-        run: npm test
+        run: pnpm test
 
       - name: Build library
-        run: npm run build
+        run: pnpm run build
 
       - name: Build examples
-        run: npm run build:examples
+        run: pnpm run build:examples

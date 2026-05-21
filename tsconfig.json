@@ -22,5 +22,5 @@
     }
   },
   "include": ["src", "tests", "examples", "types"],
-  "exclude": ["node_modules", "dist", "examples/dist"]
+  "exclude": ["node_modules", "dist", "examples/dist", "examples/nail-salon/server-ts"]
 }
