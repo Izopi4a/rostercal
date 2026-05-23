@@ -79,9 +79,14 @@ new Calendar(element, options)
 | `data` | `CrudAdapter` | — | Backend sync adapter (see [CRUD adapter](#crud-adapter)) |
 | `dnd` | `boolean` | `true` | Enable drag & drop |
 | `slotMinutes` | `number` | `30` | Minutes per time slot (resource-time-grid only) |
+| `slotMinTime` | `"HH:MM"` | `"00:00"` | Inclusive lower bound of the time-grid axis. Must align to `slotMinutes`. |
+| `slotMaxTime` | `"HH:MM"` | `"24:00"` | Exclusive upper bound of the time-grid axis. Must be `> slotMinTime` and align to `slotMinutes`. |
+| `blockedRanges` | `BlockedRange[]` | `[]` | Resource-time-grid only. Time ranges that cannot be dropped into. Rendered with a striped background. |
+| `allowDropOnBlocked` | `boolean` | `false` | If true, drops onto a blocked range are accepted normally instead of emitting `dropRejected`. |
 | `hour12` | `boolean` | follows `locale` | Force 12 or 24-hour clock for time labels |
 | `timezone` | `"local" \| "UTC"` | `"local"` | Clock used for positioning and labelling |
-| `eventDidMount` | `(info) => void` | — | Called after each event element is built and inserted. `info: { event, el }` |
+| `eventContent` | `(info) => HTMLElement \| DocumentFragment \| string` | — | Replace the inner body of each event. `info: { event }`. A returned string is inserted as text (not HTML). |
+| `eventDidMount` | `(info) => void` | — | Called after each event element is built and inserted. Runs *after* `eventContent`. `info: { event, el }` |
 | `slotDidMount` | `(info) => void` | — | Resource-time-grid only. Called for each empty slot cell. `info: { date, resourceId, el }` |
 
 ---
@@ -113,6 +118,16 @@ interface Resource {
 }
 ```
 
+### `BlockedRange`
+
+```ts
+interface BlockedRange {
+  resourceId: string;
+  start: Date | string;
+  end:   Date | string;
+}
+```
+
 ---
 
 ## Imperative API
@@ -129,6 +144,11 @@ cal.getEvents(): RosterEvent[]
 cal.addResource(resource: Resource): Resource
 cal.removeResource(id: string): void
 cal.getResources(): Resource[]
+
+// Blocked ranges (resource-time-grid)
+cal.setBlockedRanges(ranges: BlockedRange[]): void
+cal.getBlockedRanges(): BlockedRange[]
+cal.isBlocked(date: Date, resourceId: string): boolean
 
 // Navigation
 cal.next(): void        // next month or next day
@@ -156,6 +176,7 @@ cal.on("dateClick",    ({ date, resourceId? }) => { … });
 cal.on("viewChange",   ({ view, date }) => { … });
 cal.on("dataError",    ({ op, error }) => { … });
 cal.on("externalDrop", ({ date, resourceId }) => { … });   // external draggable dropped on RTG
+cal.on("dropRejected", ({ reason, date, resourceId }) => { … }); // rejected (currently only reason: "blocked")
 
 cal.off("eventClick", handler);   // or use the unsubscribe returned by on()
 ```
@@ -258,19 +279,61 @@ If you use SCSS and want to build against the source tokens:
 
 ---
 
+## Working hours and blocked ranges
+
+```ts
+new Calendar(el, {
+  view: "resource-time-grid",
+  slotMinTime: "08:00",
+  slotMaxTime: "22:00",
+  slotMinutes: 30,
+  blockedRanges: [
+    { resourceId: "a", start: "2026-05-14T12:00", end: "2026-05-14T13:00" }, // lunch
+  ],
+  allowDropOnBlocked: false, // default
+});
+```
+
+`slotMinTime` / `slotMaxTime` clamp the visible axis. Events that fall fully outside the window are hidden; those that span the boundary are clipped visually but the underlying data is unchanged.
+
+`blockedRanges` paint a striped overlay on a single resource column. Drops (both `eventDrop` and `externalDrop`) into a blocked range are refused — `dropRejected` fires with `{ reason: "blocked", date, resourceId }` and the move is rolled back. Set `allowDropOnBlocked: true` to permit them anyway (useful for admin UIs).
+
+The stripes pick up two CSS variables: `--rc-blocked-bg` and `--rc-blocked-stripe`.
+
+---
+
+## Custom event content
+
+By default each event tile renders `[start–end] title`. Replace that body with `eventContent`:
+
+```ts
+new Calendar(el, {
+  eventContent: ({ event }) => {
+    const frag = document.createDocumentFragment();
+    const title = document.createElement("strong");
+    title.textContent = event.title;
+    frag.appendChild(title);
+
+    const chip = document.createElement("span");
+    chip.className = "price-chip";
+    chip.textContent = `${event.extendedProps?.priceFinal} лв`;
+    frag.appendChild(chip);
+    return frag;
+  },
+});
+```
+
+A returned string is inserted as text — pass a `DocumentFragment` or `HTMLElement` if you need markup.
+
+`eventDidMount` still fires after the content is inserted, so it remains a valid escape hatch for adding listeners or post-render tweaks.
+
+---
+
 ## Browser support
 
 Last 3 versions of Chrome, Edge, and Firefox. Safari: best-effort (untested). No IE.
 
 Drag & drop is built on [Pointer Events](https://developer.mozilla.org/en-US/docs/Web/API/Pointer_events) — no library, no HTML5 DnD API. Works with mouse, touch, and pen uniformly.
-
----
-
-## Non-goals
-
-- No recurring events. Ever. Supply the expanded list of events yourself.
-- No week, day, list, or year views in v0.
-- No timezone math beyond UTC and the browser's local zone.
 
 ---
 

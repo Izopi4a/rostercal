@@ -156,6 +156,21 @@ export function setMinuteOfDayTz(d: Date, minutes: number, tz: "local" | "UTC"):
 }
 
 /**
+ * Parse an `"HH:MM"` string into minutes-since-midnight. Accepts `"24:00"`
+ * as 1440 (used as an exclusive upper bound). Throws on bad input.
+ */
+export function parseHourMinute(value: string, label: string): number {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(value);
+  if (!m) throw new Error(`${label} must be "HH:MM" (got "${value}")`);
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h < 0 || h > 24 || min < 0 || min > 59 || (h === 24 && min !== 0)) {
+    throw new Error(`${label} is out of range (got "${value}")`);
+  }
+  return h * 60 + min;
+}
+
+/**
  * Adds (or subtracts) `n` months from `d`. Clamps the day-of-month to the
  * target month's last day to avoid Jan 31 → Mar 3 spillover surprises.
  */

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rtg-working-hours — rostercal</title>
+    <link rel="stylesheet" href="../_shared/demo-frame.css" />
+    <style>
+      .price-chip {
+        display: inline-block;
+        margin-left: 0.4rem;
+        padding: 0 0.35rem;
+        border-radius: 999px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.25);
+      }
+      .event-title-row {
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .log {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.75rem;
+        background: #111;
+        color: #ddd;
+        padding: 0.6rem 0.8rem;
+        border-radius: 6px;
+        min-height: 4rem;
+        margin-top: 1rem;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a class="back" href="../">← all demos</a>
+      <h1>rtg-working-hours <span style="font-size: 0.65em; color: #888">v0.3.0</span></h1>
+      <p>
+        Three workers, working window 08:00–18:00, lunch breaks blocked per worker, and a
+        price chip rendered via <code>eventContent</code> instead of <code>eventDidMount</code>
+        DOM mutation.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <button type="button" id="btn-strict" aria-pressed="true">
+        Strict (reject drops on lunch)
+      </button>
+      <button type="button" id="btn-allow" aria-pressed="false">
+        Allow drops anywhere
+      </button>
+      <span style="margin-left:auto;">
+        <button type="button" id="btn-clear-log">Clear log</button>
+      </span>
+    </div>
+
+    <div id="cal"></div>
+    <pre class="log" id="log"></pre>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

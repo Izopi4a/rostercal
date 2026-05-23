@@ -165,16 +165,25 @@ export class MonthView implements View {
       node.addEventListener("keydown", (e) => this.handleKeydown(e, seg));
     }
 
-    const label = el("span", "rc-month__event-label");
-    const start = toDate(seg.event.start);
-    if (!seg.event.allDay && seg.span === 1) {
-      const timePart = el("span", "rc-month__event-time");
-      timePart.textContent = formatTime(start, locale);
-      label.appendChild(timePart);
-      label.appendChild(document.createTextNode(" "));
+    if (this.ctx?.eventContent) {
+      const content = this.ctx.eventContent({ event: seg.event });
+      if (typeof content === "string") {
+        node.appendChild(document.createTextNode(content));
+      } else {
+        node.appendChild(content);
+      }
+    } else {
+      const label = el("span", "rc-month__event-label");
+      const start = toDate(seg.event.start);
+      if (!seg.event.allDay && seg.span === 1) {
+        const timePart = el("span", "rc-month__event-time");
+        timePart.textContent = formatTime(start, locale);
+        label.appendChild(timePart);
+        label.appendChild(document.createTextNode(" "));
+      }
+      label.appendChild(document.createTextNode(seg.event.title));
+      node.appendChild(label);
     }
-    label.appendChild(document.createTextNode(seg.event.title));
-    node.appendChild(label);
 
     this.ctx?.eventDidMount?.({ event: seg.event, el: node });
 

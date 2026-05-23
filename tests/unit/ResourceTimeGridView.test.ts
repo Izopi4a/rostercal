@@ -29,9 +29,14 @@ describe("ResourceTimeGridView — rendering", () => {
     expect(root.querySelectorAll(".rc-rtg__column")).toHaveLength(3);
   });
 
-  it("renders 24 hour labels on the axis", () => {
+  it("renders 24 hour-labelled rows on the axis", () => {
     const { root } = setup();
-    expect(root.querySelectorAll(".rc-rtg__hour")).toHaveLength(24);
+    // One axis row per slot (default slotMinutes=30 → 48 rows), but only the
+    // 24 hour-boundary rows carry a visible label.
+    const labelled = [...root.querySelectorAll<HTMLElement>(".rc-rtg__hour")].filter(
+      (el) => !el.classList.contains("rc-rtg__hour--sub"),
+    );
+    expect(labelled).toHaveLength(24);
   });
 
   it("places a timed event into its resource's column", () => {

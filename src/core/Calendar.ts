@@ -2,10 +2,17 @@ import { CrudController } from "../data/CrudAdapter.js";
 import { MonthView } from "../views/month/MonthView.js";
 import { ResourceTimeGridView } from "../views/resource-time-grid/ResourceTimeGridView.js";
 import type { DropProposal, ResizeProposal, View, ViewContext } from "../views/View.js";
-import { addMonths, toDate, type WeekStart } from "./dates.js";
+import { addMonths, parseHourMinute, toDate, type WeekStart } from "./dates.js";
 import { EventStore, ResourceStore } from "./EventStore.js";
 import { type CalendarEventHandler, type CalendarEventName, Emitter } from "./events.js";
-import type { CalendarOptions, Resource, RosterEvent, ViewName } from "./types.js";
+import type {
+  BlockedRange,
+  CalendarOptions,
+  EventContentRenderer,
+  Resource,
+  RosterEvent,
+  ViewName,
+} from "./types.js";
 
 interface ResolvedOptions {
   view: ViewName;
@@ -16,8 +23,12 @@ interface ResolvedOptions {
   dnd: boolean;
   maxEventsPerCell: number;
   slotMinutes: number;
+  slotMinMinute: number;
+  slotMaxMinute: number;
+  allowDropOnBlocked: boolean;
   hour12: boolean | undefined;
   timezone: "local" | "UTC";
+  eventContent: EventContentRenderer | undefined;
   eventDidMount: ((info: { event: RosterEvent; el: HTMLElement }) => void) | undefined;
   slotDidMount: ((info: { date: Date; resourceId: string; el: HTMLElement }) => void) | undefined;
 }
@@ -27,6 +38,7 @@ export class Calendar {
   private options: ResolvedOptions;
   private events: EventStore;
   private resources: ResourceStore;
+  private blockedRanges: BlockedRange[];
   private emitter = new Emitter();
   private view: View | null = null;
   private mounted = false;
@@ -37,7 +49,35 @@ export class Calendar {
     this.options = resolve(options);
     this.events = new EventStore(options.events ?? []);
     this.resources = new ResourceStore(options.resources ?? []);
+    this.blockedRanges = (options.blockedRanges ?? []).map(normalizeBlocked);
     this.crud = options.data ? new CrudController(options.data) : null;
+  }
+
+  // --- blocked ranges ---
+
+  setBlockedRanges(ranges: BlockedRange[]): void {
+    this.blockedRanges = ranges.map(normalizeBlocked);
+    this.refresh();
+  }
+
+  getBlockedRanges(): BlockedRange[] {
+    return this.blockedRanges.map((r) => ({ ...r }));
+  }
+
+  /**
+   * True when `date` on `resourceId` overlaps any blocked range. Used by drop
+   * handling and exposed for consumers who need the same check (e.g. before
+   * opening a "new event" modal from a `dateClick`).
+   */
+  isBlocked(date: Date, resourceId: string): boolean {
+    const t = date.getTime();
+    for (const r of this.blockedRanges) {
+      if (r.resourceId !== resourceId) continue;
+      const start = toDate(r.start).getTime();
+      const end = toDate(r.end).getTime();
+      if (t >= start && t < end) return true;
+    }
+    return false;
   }
 
   // --- lifecycle ---
@@ -193,6 +233,10 @@ export class Calendar {
       locale: this.options.locale,
       maxEventsPerCell: this.options.maxEventsPerCell,
       slotMinutes: this.options.slotMinutes,
+      slotMinMinute: this.options.slotMinMinute,
+      slotMaxMinute: this.options.slotMaxMinute,
+      blockedRanges: this.blockedRanges,
+      allowDropOnBlocked: this.options.allowDropOnBlocked,
       dnd: this.options.dnd,
       hour12: this.options.hour12,
       timezone: this.options.timezone,
@@ -205,8 +249,13 @@ export class Calendar {
       onEventDrop: (proposal) => this.applyDrop(proposal),
       onEventResize: (proposal) => this.applyResize(proposal),
       onExternalDrop: (date, resourceId) => {
+        if (!this.options.allowDropOnBlocked && this.isBlocked(date, resourceId)) {
+          void this.emitter.emit("dropRejected", { reason: "blocked", date, resourceId });
+          return;
+        }
         void this.emitter.emit("externalDrop", { date, resourceId });
       },
+      eventContent: this.options.eventContent,
       eventDidMount: this.options.eventDidMount,
       slotDidMount: this.options.slotDidMount,
     };
@@ -227,6 +276,22 @@ export class Calendar {
     if (!current) return;
     const oldStart = toDate(current.start);
     const oldEnd = current.end ? toDate(current.end) : undefined;
+
+    const targetResource = proposal.newResourceId ?? current.resourceId;
+    if (
+      !this.options.allowDropOnBlocked &&
+      targetResource &&
+      this.isBlocked(proposal.newStart, targetResource)
+    ) {
+      void this.emitter.emit("dropRejected", {
+        reason: "blocked",
+        date: proposal.newStart,
+        resourceId: targetResource,
+      });
+      // Nothing to roll back — we never applied the patch.
+      this.refresh();
+      return;
+    }
 
     const oldResourceId = current.resourceId;
     const patch: Partial<RosterEvent> = { start: proposal.newStart };
@@ -353,6 +418,21 @@ export class Calendar {
 }
 
 function resolve(opts: CalendarOptions): ResolvedOptions {
+  const slotMinutes = opts.slotMinutes ?? 30;
+  const slotMinMinute =
+    opts.slotMinTime !== undefined ? parseHourMinute(opts.slotMinTime, "slotMinTime") : 0;
+  const slotMaxMinute =
+    opts.slotMaxTime !== undefined ? parseHourMinute(opts.slotMaxTime, "slotMaxTime") : 24 * 60;
+  if (slotMinMinute >= slotMaxMinute) {
+    throw new Error(
+      `slotMinTime (${opts.slotMinTime ?? "00:00"}) must be earlier than slotMaxTime (${opts.slotMaxTime ?? "24:00"})`,
+    );
+  }
+  if (slotMinMinute % slotMinutes !== 0 || slotMaxMinute % slotMinutes !== 0) {
+    throw new Error(
+      `slotMinTime and slotMaxTime must align to slotMinutes (${slotMinutes}); got ${opts.slotMinTime ?? "00:00"} / ${opts.slotMaxTime ?? "24:00"}`,
+    );
+  }
   return {
     view: opts.view ?? "month",
     date: opts.date ?? new Date(),
@@ -361,10 +441,25 @@ function resolve(opts: CalendarOptions): ResolvedOptions {
     theme: opts.theme ?? "light",
     dnd: opts.dnd ?? true,
     maxEventsPerCell: 3,
-    slotMinutes: opts.slotMinutes ?? 30,
+    slotMinutes,
+    slotMinMinute,
+    slotMaxMinute,
+    allowDropOnBlocked: opts.allowDropOnBlocked ?? false,
     hour12: opts.hour12,
     timezone: opts.timezone ?? "local",
+    eventContent: opts.eventContent,
     eventDidMount: opts.eventDidMount,
     slotDidMount: opts.slotDidMount,
   };
+}
+
+function normalizeBlocked(range: BlockedRange): BlockedRange {
+  const start = toDate(range.start);
+  const end = toDate(range.end);
+  if (end.getTime() <= start.getTime()) {
+    throw new Error(
+      `BlockedRange end must be after start (resource "${range.resourceId}": ${start.toISOString()} → ${end.toISOString()})`,
+    );
+  }
+  return { resourceId: range.resourceId, start, end };
 }

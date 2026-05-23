@@ -9,6 +9,16 @@ export interface CalendarEventPayloads {
   dataError: { op: "list" | "create" | "update" | "delete"; error: unknown };
   /** Fired when an external draggable is dropped onto the time grid. */
   externalDrop: { date: Date; resourceId: string };
+  /**
+   * Fired when a drop (`eventDrop` or `externalDrop`) is refused by the calendar
+   * itself — for example, into a blocked range. The originating action is
+   * rolled back and the underlying `eventDrop` / `externalDrop` does not fire.
+   */
+  dropRejected: {
+    reason: "blocked";
+    date: Date;
+    resourceId: string;
+  };
 }
 
 export type CalendarEventName = keyof CalendarEventPayloads;

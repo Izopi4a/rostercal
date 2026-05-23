@@ -115,6 +115,26 @@
   }
 }
 
+.rc-rtg__hour--sub {
+  color: transparent; // visually empty but preserves slot-aligned row height
+}
+
+.rc-rtg__blocked {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: var(--rc-blocked-bg);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--rc-blocked-stripe) 0,
+    var(--rc-blocked-stripe) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
 .rc-rtg__event {
   position: absolute;
   background: var(--rc-event-bg);

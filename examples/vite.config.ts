@@ -36,6 +36,7 @@ export default defineConfig({
         dnd: resolve(root, "dnd/index.html"),
         rtgWorkerScheduling: resolve(root, "rtg-worker-scheduling/index.html"),
         rtgManyResources: resolve(root, "rtg-many-resources/index.html"),
+        rtgWorkingHours: resolve(root, "rtg-working-hours/index.html"),
         crudUrlShorthand: resolve(root, "crud-url-shorthand/index.html"),
         crudFunctionForm: resolve(root, "crud-function-form/index.html"),
         nailSalon: resolve(root, "nail-salon/index.html"),

@@ -1,6 +1,6 @@
 {
   "name": "@izopi4a/rostercal",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A small calendar library: Month view + Resource Time Grid. MIT, zero runtime deps.",
   "type": "module",
   "main": "./dist/index.js",
