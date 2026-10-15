@@ -55,12 +55,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/izopi4a/rostercal.git"
+    "url": "git+https://github.com/Izopi4a/rostercal.git"
   },
   "bugs": {
-    "url": "https://github.com/izopi4a/rostercal/issues"
+    "url": "https://github.com/Izopi4a/rostercal/issues"
   },
-  "homepage": "https://github.com/izopi4a/rostercal#readme",
+  "homepage": "https://github.com/Izopi4a/rostercal#readme",
   "sideEffects": [
     "*.css",
     "*.scss"
