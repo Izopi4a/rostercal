@@ -1,6 +1,6 @@
 {
   "name": "@izopi4a/rostercal",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A small calendar library: Month view + Resource Time Grid. MIT, zero runtime deps.",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,6 +10,7 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./global": "./dist/rostercal.global.js",
     "./styles": "./dist/styles/index.css",
     "./themes/*.css": "./dist/styles/themes/*.css",
     "./scss/*": "./src/styles/*"
@@ -24,8 +25,9 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "npm run build:ts && npm run build:css",
+    "build": "npm run build:ts && npm run build:css && npm run build:iife",
     "build:ts": "tsc -p tsconfig.build.json",
+    "build:iife": "esbuild src/index.ts --bundle --format=iife --global-name=rostercal --target=es2020 --outfile=dist/rostercal.global.js",
     "build:css": "sass src/styles/index.scss:dist/styles/index.css src/styles/themes:dist/styles/themes --no-source-map --style=compressed",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -68,6 +70,7 @@
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.7.0",
     "@vitest/coverage-v8": "^4.1.6",
+    "esbuild": "^0.28.0",
     "jsdom": "^29.1.1",
     "sass": "^1.99.0",
     "typescript": "^6.0.3",

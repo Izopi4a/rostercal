@@ -40,6 +40,14 @@ export interface ViewContext {
   dnd: boolean;
   hour12: boolean | undefined;
   timezone: "local" | "UTC";
+  /** Pixel height of one hour on the time-grid axis. */
+  hourHeight: number;
+  /** Time-grid body height: a pixel value, "auto" (page scrolls), or undefined for the CSS default. */
+  height: number | "auto" | undefined;
+  showTitle: boolean;
+  /** The current moment, for the now-line and auto-scroll. */
+  now: () => Date;
+  externalDragMinutes: number | (() => number | undefined) | undefined;
   onEventClick?: (event: RosterEvent, native: MouseEvent) => void;
   onDateClick?: (date: Date, resourceId?: string) => void;
   /** A view asks the calendar to apply a move. Calendar handles optimistic update + rollback. */

@@ -112,4 +112,34 @@ export interface CalendarOptions {
    * add-button that appears on hover at no extra CSS cost.
    */
   slotDidMount?: (info: { date: Date; resourceId: string; el: HTMLElement }) => void;
+  /**
+   * Resource Time Grid only. Pixel height of one hour on the axis. Default 48.
+   * Slots scale with it (`slotMinutes / 60 * hourHeight`).
+   */
+  hourHeight?: number;
+  /**
+   * Resource Time Grid only. Height of the scrollable body. Default: a CSS
+   * `clamp(24rem, 70vh, 56rem)` box with its own scrollbar. A number is a
+   * fixed pixel height. `"auto"` removes the inner scrolling entirely: the
+   * grid takes the height of the whole window and the page scrolls instead
+   * (the resource header still sticks to the top of the nearest scrolling
+   * ancestor).
+   */
+  height?: number | "auto";
+  /** Resource Time Grid only. Render the built-in date title above the grid. Default true. */
+  showTitle?: boolean;
+  /**
+   * Replaces `new Date()` wherever the calendar needs the current moment: the
+   * now-line and the initial auto-scroll. Use it when the times you store are
+   * not the browser's clock, e.g. a salon that saves local wall-clock times
+   * as UTC.
+   */
+  now?: () => Date;
+  /**
+   * Resource Time Grid only. Height, in minutes, of the drop preview shown
+   * while an external draggable moves over the grid. Default: one slot. A
+   * function is called on every `dragover`, so it can answer for whatever is
+   * being dragged right now; returning `undefined` falls back to one slot.
+   */
+  externalDragMinutes?: number | (() => number | undefined);
 }

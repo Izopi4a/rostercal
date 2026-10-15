@@ -14,6 +14,18 @@ Built for worker scheduling (duty rosters, shift rosters, crew rosters). TypeScr
 npm install @izopi4a/rostercal
 ```
 
+## Without a bundler
+
+`dist/rostercal.global.js` is a self-contained IIFE build that puts the library on `window.rostercal`:
+
+```html
+<link rel="stylesheet" href="node_modules/@izopi4a/rostercal/dist/styles/index.css">
+<script src="node_modules/@izopi4a/rostercal/dist/rostercal.global.js"></script>
+<script>
+  const cal = new rostercal.Calendar(document.getElementById("cal"), { view: "resource-time-grid" });
+</script>
+```
+
 ## Import styles
 
 ```ts
@@ -88,6 +100,11 @@ new Calendar(element, options)
 | `eventContent` | `(info) => HTMLElement \| DocumentFragment \| string` | — | Replace the inner body of each event. `info: { event }`. A returned string is inserted as text (not HTML). |
 | `eventDidMount` | `(info) => void` | — | Called after each event element is built and inserted. Runs *after* `eventContent`. `info: { event, el }` |
 | `slotDidMount` | `(info) => void` | — | Resource-time-grid only. Called for each empty slot cell. `info: { date, resourceId, el }` |
+| `hourHeight` | `number` | `48` | Resource-time-grid only. Pixel height of one hour; slots scale with it. |
+| `height` | `number \| "auto"` | CSS `clamp(24rem, 70vh, 56rem)` | Resource-time-grid only. Fixed pixel height of the scrolling body, or `"auto"` to let the page scroll instead of the grid. |
+| `showTitle` | `boolean` | `true` | Resource-time-grid only. Render the built-in date title above the grid. |
+| `now` | `() => Date` | `() => new Date()` | The current moment for the now-line and the initial auto-scroll, e.g. when stored times are not the browser's clock. |
+| `externalDragMinutes` | `number \| () => number \| undefined` | one slot | Resource-time-grid only. Height of the drop preview while an external draggable is over the grid. A function is asked on every `dragover`. |
 
 ---
 
@@ -139,6 +156,7 @@ cal.updateEvent(id: string, patch: Partial<RosterEvent>): RosterEvent
 cal.removeEvent(id: string): void
 cal.getEvent(id: string): RosterEvent | undefined
 cal.getEvents(): RosterEvent[]
+cal.setEvents(events: RosterEvent[]): void   // replace them all, one render, nothing sent to the CRUD adapter
 
 // Resources
 cal.addResource(resource: Resource): Resource

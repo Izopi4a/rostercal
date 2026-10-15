@@ -13,7 +13,7 @@ import { startDrag } from "../../dnd/DragController.js";
 import type { View, ViewContext } from "../View.js";
 import { layoutResourceTimeGrid, type TimeGridSegment } from "./layout.js";
 
-const HOUR_HEIGHT_PX = 48; // 24px per slot when slotMinutes=30 (default)
+const DEFAULT_HOUR_HEIGHT_PX = 48; // 24px per slot when slotMinutes=30 (default)
 
 type DragMode = "move" | "resize";
 
@@ -78,8 +78,19 @@ export class ResourceTimeGridView implements View {
     return this.ctx.slotMaxMinute - this.ctx.slotMinMinute;
   }
 
+  private hourHeightPx(): number {
+    return this.ctx?.hourHeight ?? DEFAULT_HOUR_HEIGHT_PX;
+  }
+
   private windowHeightPx(): number {
-    return (this.windowMinutes() / 60) * HOUR_HEIGHT_PX;
+    return (this.windowMinutes() / 60) * this.hourHeightPx();
+  }
+
+  /** Minutes the external drop preview should cover: the option, or one slot. */
+  private externalDragMinutes(): number {
+    const option = this.ctx?.externalDragMinutes;
+    const minutes = typeof option === "function" ? option() : option;
+    return minutes !== undefined && minutes > 0 ? minutes : (this.ctx?.slotMinutes ?? 30);
   }
 
   private draw(): void {
@@ -102,21 +113,26 @@ export class ResourceTimeGridView implements View {
     }
 
     const root = el("div", "rc-rtg");
-    const slotHeightPx = (HOUR_HEIGHT_PX * slotMinutes) / 60;
+    const hourHeight = this.hourHeightPx();
+    const slotHeightPx = (hourHeight * slotMinutes) / 60;
     root.style.setProperty("--rc-rtg-slot-minutes", String(slotMinutes));
     root.style.setProperty("--rc-rtg-slot-height", `${slotHeightPx}px`);
-    root.style.setProperty("--rc-rtg-hour-height", `${HOUR_HEIGHT_PX}px`);
+    root.style.setProperty("--rc-rtg-hour-height", `${hourHeight}px`);
     root.style.setProperty("--rc-rtg-day-height", `${windowHeight}px`);
     root.style.setProperty("--rc-rtg-resources", String(resources.length));
+    if (this.ctx.height === "auto") root.classList.add("rc-rtg--auto-height");
 
-    const title = el("div", "rc-rtg__title");
-    title.textContent = `${monthYearLabel(date, locale)} — ${date.getDate()}`;
-    root.appendChild(title);
+    if (this.ctx.showTitle) {
+      const title = el("div", "rc-rtg__title");
+      title.textContent = `${monthYearLabel(date, locale)} — ${date.getDate()}`;
+      root.appendChild(title);
+    }
 
     // Scrollable body: 2x2 grid (axis + content) x (header + body). Header is sticky
     // inside the scroll container so it shares the body's width — keeps columns aligned
     // even when the vertical scrollbar appears.
     const body = el("div", "rc-rtg__body");
+    if (typeof this.ctx.height === "number") body.style.height = `${this.ctx.height}px`;
     this.bodyEl = body;
 
     const corner = el("div", "rc-rtg__corner");
@@ -480,7 +496,9 @@ export class ResourceTimeGridView implements View {
     const windowMinutes = this.windowMinutes();
     const windowHeight = this.windowHeightPx();
     const top = ((startMinute - this.ctx.slotMinMinute) / windowMinutes) * windowHeight;
-    const height = (this.ctx.slotMinutes / windowMinutes) * windowHeight;
+    // the dragged thing's own length, cut at the bottom of the window
+    const minutes = Math.min(this.externalDragMinutes(), this.ctx.slotMaxMinute - startMinute);
+    const height = (minutes / windowMinutes) * windowHeight;
     this.dropPreviewEl.style.top = `${top}px`;
     this.dropPreviewEl.style.height = `${height}px`;
   }
@@ -508,7 +526,9 @@ export class ResourceTimeGridView implements View {
 
   private autoScroll(): void {
     if (!this.bodyEl || !this.ctx) return;
-    const now = new Date();
+    // nothing to scroll inside: the page holds the whole grid
+    if (this.ctx.height === "auto") return;
+    const now = this.ctx.now();
     const tz = this.ctx.timezone;
     const slotMinMinute = this.ctx.slotMinMinute;
     const slotMaxMinute = this.ctx.slotMaxMinute;
@@ -536,7 +556,7 @@ export class ResourceTimeGridView implements View {
   private updateNowLine(): void {
     if (!this.nowLineEl || !this.ctx) return;
     const tz = this.ctx.timezone;
-    const now = new Date();
+    const now = this.ctx.now();
     const isToday = isSameDayTz(this.ctx.date, now, tz);
     const minute = minuteOfDayTz(now, tz);
     const inWindow = isToday && minute >= this.ctx.slotMinMinute && minute < this.ctx.slotMaxMinute;

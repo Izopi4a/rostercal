@@ -28,6 +28,11 @@ interface ResolvedOptions {
   allowDropOnBlocked: boolean;
   hour12: boolean | undefined;
   timezone: "local" | "UTC";
+  hourHeight: number;
+  height: number | "auto" | undefined;
+  showTitle: boolean;
+  now: () => Date;
+  externalDragMinutes: number | (() => number | undefined) | undefined;
   eventContent: EventContentRenderer | undefined;
   eventDidMount: ((info: { event: RosterEvent; el: HTMLElement }) => void) | undefined;
   slotDidMount: ((info: { date: Date; resourceId: string; el: HTMLElement }) => void) | undefined;
@@ -143,6 +148,16 @@ export class Calendar {
     return this.events.list();
   }
 
+  /**
+   * Replace every event at once, with a single re-render. Nothing is sent to
+   * the CRUD adapter: this is for callers that fetch the day's events
+   * themselves.
+   */
+  setEvents(events: RosterEvent[]): void {
+    this.events = new EventStore(events);
+    this.refresh();
+  }
+
   // --- resources ---
 
   addResource(resource: Resource): Resource {
@@ -240,6 +255,11 @@ export class Calendar {
       dnd: this.options.dnd,
       hour12: this.options.hour12,
       timezone: this.options.timezone,
+      hourHeight: this.options.hourHeight,
+      height: this.options.height,
+      showTitle: this.options.showTitle,
+      now: this.options.now,
+      externalDragMinutes: this.options.externalDragMinutes,
       onEventClick: (event, native) => {
         void this.emitter.emit("eventClick", { event, native });
       },
@@ -447,6 +467,11 @@ function resolve(opts: CalendarOptions): ResolvedOptions {
     allowDropOnBlocked: opts.allowDropOnBlocked ?? false,
     hour12: opts.hour12,
     timezone: opts.timezone ?? "local",
+    hourHeight: opts.hourHeight ?? 48,
+    height: opts.height,
+    showTitle: opts.showTitle ?? true,
+    now: opts.now ?? (() => new Date()),
+    externalDragMinutes: opts.externalDragMinutes,
     eventContent: opts.eventContent,
     eventDidMount: opts.eventDidMount,
     slotDidMount: opts.slotDidMount,

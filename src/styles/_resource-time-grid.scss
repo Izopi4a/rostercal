@@ -24,6 +24,12 @@
   overflow-y: auto;
 }
 
+// height: "auto" — the page scrolls, not the grid
+.rc-rtg--auto-height .rc-rtg__body {
+  height: auto;
+  overflow: visible;
+}
+
 .rc-rtg__corner {
   grid-column: 1;
   grid-row: 1;

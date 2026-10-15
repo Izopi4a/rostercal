@@ -4,6 +4,20 @@ All notable changes to `@izopi4a/rostercal` are listed here.
 
 This project is pre-1.0. While in `0.x`, minor version bumps may include breaking changes. They will always be called out in this file.
 
+## [0.4.0] — 2026-10-15
+
+Options the first real integration (a salon's work calendar, moving off FullCalendar) needed. All resource-time-grid unless noted, all optional, defaults keep the 0.3.0 behavior.
+
+### Added
+
+- **`hourHeight`** — pixel height of one hour (default 48). Slots scale with it.
+- **`height`** — `number` for a fixed body height, or `"auto"` to drop the inner scrollbar and let the page scroll (class `rc-rtg--auto-height`). The initial auto-scroll is skipped with `"auto"`.
+- **`showTitle`** — `false` hides the built-in date title for pages that have their own.
+- **`now`** (all views) — a clock function for the now-line and the auto-scroll, for apps whose stored times are not the browser's clock.
+- **`externalDragMinutes`** — height, in minutes, of the drop preview during an external drag; a number or a function asked on every `dragover`. Default one slot, cut at the end of the window.
+- **`cal.setEvents(events)`** — replace all events in one render; not sent to the CRUD adapter.
+- **`dist/rostercal.global.js`** — an IIFE build (`window.rostercal`) for pages without a bundler, also exported as `@izopi4a/rostercal/global`.
+
 ## [0.3.0] — 2026-05-23
 
 ### Added
