@@ -355,6 +355,13 @@ Drag & drop is built on [Pointer Events](https://developer.mozilla.org/en-US/doc
 
 ---
 
+## Releasing
+
+1. Bump `version` in `package.json`, add the CHANGELOG entry, commit to master.
+2. `git tag vX.Y.Z && git push origin master vX.Y.Z`.
+
+The tag runs `.github/workflows/publish.yml`: checks, tests, build, then `npm publish` through npm's trusted publishing (no token in GitHub). Configured once on npmjs.com under the package's settings, *Trusted publisher*: GitHub Actions, `Izopi4a` / `rostercal` / `publish.yml`.
+
 ## License
 
 MIT

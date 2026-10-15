@@ -1,0 +1,60 @@
+# Publishes a release to npm when a version tag is pushed:
+#
+#   git tag v0.4.0 && git push origin v0.4.0
+#
+# The tag must equal package.json's version. Authentication is npm's trusted
+# publishing (OIDC): the npm package is configured once on npmjs.com
+# (Settings → Trusted publisher → GitHub Actions: Izopi4a / rostercal /
+# publish.yml), nothing is stored in GitHub. It also attaches provenance.
+name: Publish to npm
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Check, build, publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: The tag must be the package version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag is $GITHUB_REF_NAME but package.json says $version" >&2
+            exit 1
+          fi
+
+      - name: Biome check
+        run: pnpm run check
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build library
+        run: pnpm run build
+
+      - name: Publish
+        run: npm publish --access public
