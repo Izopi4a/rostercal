@@ -264,7 +264,10 @@ export class Calendar {
         void this.emitter.emit("eventClick", { event, native });
       },
       onDateClick: (date, resourceId) => {
-        void this.emitter.emit("dateClick", { date, ...(resourceId ? { resourceId } : {}) });
+        void this.emitter.emit(
+          "dateClick",
+          resourceId ? { date, resourceId, blocked: this.isBlocked(date, resourceId) } : { date },
+        );
       },
       onEventDrop: (proposal) => this.applyDrop(proposal),
       onEventResize: (proposal) => this.applyResize(proposal),

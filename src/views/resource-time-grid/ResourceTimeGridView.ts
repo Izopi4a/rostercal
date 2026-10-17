@@ -34,6 +34,12 @@ export class ResourceTimeGridView implements View {
   private nowTimer: ReturnType<typeof setInterval> | null = null;
   /** Cached column rect lookups for hit-testing during a drag. */
   private columnRects: Array<{ resourceId: string; left: number; right: number }> = [];
+  /**
+   * True when the last pointerdown landed on an event or a slot "+" button. The
+   * click that follows (possibly after a drag, wherever the browser sends it)
+   * is then not a dateClick.
+   */
+  private pressedOnItem = false;
 
   mount(container: HTMLElement, ctx: ViewContext): void {
     this.host = container;
@@ -220,6 +226,16 @@ export class ResourceTimeGridView implements View {
     grid.appendChild(nowLine);
     this.nowLineEl = nowLine;
     this.gridEl = grid;
+
+    grid.addEventListener("pointerdown", (e) => {
+      this.pressedOnItem = isItemTarget(e.target);
+    });
+    grid.addEventListener("click", (e) => {
+      const pressedOnItem = this.pressedOnItem;
+      this.pressedOnItem = false;
+      if (pressedOnItem || isItemTarget(e.target)) return;
+      this.handleDateClick(e);
+    });
 
     grid.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -450,6 +466,24 @@ export class ResourceTimeGridView implements View {
     }
   }
 
+  /** Emit onDateClick for a click on an empty part of a column, at the start of the slot under it. */
+  private handleDateClick(e: MouseEvent): void {
+    if (!this.ctx) return;
+    const col = (e.target as Element).closest<HTMLElement>(".rc-rtg__column");
+    const resourceId = col?.dataset.resourceId;
+    if (!col || !resourceId) return;
+    const { slotMinutes, slotMinMinute, slotMaxMinute } = this.ctx;
+    const dy = e.clientY - col.getBoundingClientRect().top;
+    const offset = Math.floor((dy / this.windowHeightPx()) * this.windowMinutes());
+    // floor, not snapMinutes(): any point inside a slot belongs to that slot
+    const minute = clamp(
+      slotMinMinute + Math.floor(offset / slotMinutes) * slotMinutes,
+      slotMinMinute,
+      slotMaxMinute - slotMinutes,
+    );
+    this.ctx.onDateClick?.(setMinuteOfDayTz(this.ctx.date, minute, this.ctx.timezone), resourceId);
+  }
+
   /** Hit-test (x, y) within the body. Returns the resource column + minute under the pointer. */
   private hitTest(clientX: number, clientY: number): { resourceId: string; minute: number } | null {
     if (!this.gridEl || !this.ctx) return null;
@@ -572,6 +606,11 @@ function el(tag: string, className: string): HTMLElement {
   const node = document.createElement(tag);
   node.className = className;
   return node;
+}
+
+/** Events and slot "+" buttons own their clicks; a click there is not a dateClick. */
+function isItemTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(".rc-rtg__event, .rc-rtg__slot-add") !== null;
 }
 
 function clamp(value: number, min: number, max: number): number {

@@ -4,7 +4,12 @@ export interface CalendarEventPayloads {
   eventClick: { event: RosterEvent; native: MouseEvent };
   eventDrop: { event: RosterEvent; oldStart: Date; oldEnd?: Date };
   eventResize: { event: RosterEvent; oldStart: Date; oldEnd?: Date };
-  dateClick: { date: Date; resourceId?: string };
+  /**
+   * A click on an empty cell (month) or slot (resource-time-grid). In the time
+   * grid `date` is the start of the clicked slot, and `blocked` says whether it
+   * falls in a blocked range — the click still fires there; the app decides.
+   */
+  dateClick: { date: Date; resourceId?: string; blocked?: boolean };
   viewChange: { view: ViewName; date: Date };
   dataError: { op: "list" | "create" | "update" | "delete"; error: unknown };
   /** Fired when an external draggable is dropped onto the time grid. */

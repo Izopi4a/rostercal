@@ -4,6 +4,16 @@ All notable changes to `@izopi4a/rostercal` are listed here.
 
 This project is pre-1.0. While in `0.x`, minor version bumps may include breaking changes. They will always be called out in this file.
 
+## [0.5.0] — 2026-10-17
+
+### Fixed
+
+- **`dateClick` in resource-time-grid.** A click on an empty slot now emits `{ date, resourceId, blocked }`. Before this fix, the time grid never emitted `dateClick`. `date` is the start of the clicked slot. Clicks on events, on a `.rc-rtg__slot-add` button, and the click that ends a drag are not counted.
+
+### Added
+
+- `blocked` on the resource-time-grid `dateClick` payload: `true` when the slot start lies in a blocked range. The click still fires there; the app decides what to do.
+
 ## [0.4.0] — 2026-10-15
 
 Options the first real integration (a salon's work calendar, moving off FullCalendar) needed. All resource-time-grid unless noted, all optional, defaults keep the 0.3.0 behavior.

@@ -190,13 +190,35 @@ cal.destroy(): void
 cal.on("eventClick",   ({ event, native }) => { … });
 cal.on("eventDrop",    ({ event, oldStart, oldEnd }) => { … });
 cal.on("eventResize",  ({ event, oldStart, oldEnd }) => { … });
-cal.on("dateClick",    ({ date, resourceId? }) => { … });
+cal.on("dateClick",    ({ date, resourceId?, blocked? }) => { … }); // empty cell or slot, both views
 cal.on("viewChange",   ({ view, date }) => { … });
 cal.on("dataError",    ({ op, error }) => { … });
 cal.on("externalDrop", ({ date, resourceId }) => { … });   // external draggable dropped on RTG
 cal.on("dropRejected", ({ reason, date, resourceId }) => { … }); // rejected (currently only reason: "blocked")
 
 cal.off("eventClick", handler);   // or use the unsubscribe returned by on()
+```
+
+**`dateClick`** fires for a click on an empty day cell (month) or an empty slot (resource-time-grid). In the time grid `date` is the start of the clicked slot, `resourceId` is its column, and `blocked` is `true` when that slot start lies in a blocked range (the same answer as `cal.isBlocked(date, resourceId)`). It still fires on blocked slots, so check `blocked` before opening a "new appointment" dialog. Clicks on events (`eventClick`), on a `.rc-rtg__slot-add` button, and the click that ends a drag never count as a `dateClick`.
+
+```ts
+cal.on("dateClick", ({ date, resourceId, blocked }) => {
+  if (!resourceId || blocked) return;
+  openNewAppointment(date, resourceId);
+});
+```
+
+**A visible "+" button per slot:** inject a `<button class="rc-rtg__slot-add">` from `slotDidMount`. The bundled styles show it while the slot is hovered. The button has its own click handler, and clicking it does not also fire `dateClick`.
+
+```ts
+slotDidMount({ date, resourceId, el }) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "rc-rtg__slot-add";
+  btn.textContent = "+";
+  btn.addEventListener("click", () => openNewAppointment(date, resourceId));
+  el.appendChild(btn);
+},
 ```
 
 `on()` returns an unsubscribe function. Handlers may return a `Promise`; the calendar awaits it where the result matters (e.g. rejecting an `eventDrop` handler rolls back the move).

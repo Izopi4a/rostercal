@@ -181,7 +181,7 @@ calendar.destroy(): void;
 calendar.on("eventClick",   (e: { event: RosterEvent, native: MouseEvent }) => …);
 calendar.on("eventDrop",    (e: { event: RosterEvent, oldStart: Date, oldEnd?: Date }) => …);
 calendar.on("eventResize",  (e: { event: RosterEvent, oldStart: Date, oldEnd?: Date }) => …);
-calendar.on("dateClick",    (e: { date: Date, resourceId?: string }) => …);
+calendar.on("dateClick",    (e: { date: Date, resourceId?: string, blocked?: boolean }) => …);
 calendar.on("viewChange",   (e: { view: string, date: Date }) => …);
 calendar.on("dataError",    (e: { op: "list"|"create"|"update"|"delete", error: unknown }) => …);
 ```
